@@ -1,7 +1,7 @@
 server:
   port: 8888
-  servlet-context:
-    path: /identity-service/
+  servlet:
+    context-path: /identity-service
 
 spring:
   datasource:
@@ -16,4 +16,9 @@ spring:
 
 jwt:
   signer-key: akksssskdhhfkshhdgdsjfggdffhdfhgfddsigner-key
-  valid-duration: 24 #hour
+  valid-duration: 24 #hours
+
+
+auth:
+  verify:
+    valid-duration: 300 # seconds

@@ -1,7 +1,5 @@
 package com.box_chat.identity_service.entity;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,8 +20,9 @@ public class Account {
     @Column(nullable = false)
     String password;
     LocalDateTime timeCreate;
-    String authenticationCode;
-    LocalDateTime authenticationTimeExpire;
+    String authCode;
+    LocalDateTime authTimeExpire;
+    boolean verified;
 
     @PrePersist
     void onCreate() {

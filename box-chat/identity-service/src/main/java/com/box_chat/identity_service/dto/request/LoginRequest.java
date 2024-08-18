@@ -1,6 +1,7 @@
 package com.box_chat.identity_service.dto.request;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,5 +18,6 @@ public class LoginRequest {
     @Email(message = "Email is invalid")
     String email;
     @NotBlank(message = "Password must be from 5 character")
+    @Min(value = 5, message = "Password must be from 5 character")
     String password;
 }
