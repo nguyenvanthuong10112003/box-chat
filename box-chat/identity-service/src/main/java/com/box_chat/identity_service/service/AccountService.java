@@ -1,9 +1,9 @@
 package com.box_chat.identity_service.service;
 
+import com.box_chat.event.dto.NotificationEvent;
 import com.box_chat.identity_service.dto.request.AccountCreationRequest;
 import com.box_chat.identity_service.dto.request.AccountVerifyRequest;
 import com.box_chat.identity_service.dto.request.LoginRequest;
-import com.box_chat.identity_service.dto.response.AccountResponse;
 import com.box_chat.identity_service.dto.response.LoginResponse;
 import com.box_chat.identity_service.entity.Account;
 import com.box_chat.identity_service.entity.User;
@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -50,6 +52,7 @@ public class AccountService {
     PasswordEncoder passwordEncoder;
     AccountMapper accountMapper;
     Random random;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public void verifyAccount(AccountVerifyRequest accountVerifyRequest) {
         var account = accountRepository.findById(accountVerifyRequest.getAccountId())
@@ -67,9 +70,9 @@ public class AccountService {
 
     public String createAccount(AccountCreationRequest accountCreationRequest) {
         var account = accountMapper.toAccount(accountCreationRequest);
-
+        String authCode = createAuthCode();
         try {
-            account.setAuthCode(createAuthCode());
+            account.setAuthCode(authCode);
             account.setAuthTimeExpire(LocalDateTime.now().plusSeconds(VERIFY_VALID_DURATION));
             account = accountRepository.save(account);
         } catch (DataIntegrityViolationException e) {
@@ -78,6 +81,27 @@ public class AccountService {
 
         var newUser = User.builder().account(account).build();
         userRepository.save(newUser);
+
+        String nameNewUser = "Người dùng mới";
+        NotificationEvent notificationEvent = NotificationEvent
+            .builder()
+            .channel("EMAIL")
+            .receiverEmail(account.getEmail())
+            .receiverName(nameNewUser)
+            .subject("[BOXCHAT] Xác thực tài khoản")
+            .htmlContent(String.format(
+                "</p>" +
+                    "Xin chào %s. <br>" +
+                    "Mã xác thực của bạn là: %s <br> " +
+                    "Mã xác thực có hạn sử dụng %d phút. <br>" +
+                    "Vui lòng không tiết lộ thông tin cho bất kỳ ai." +
+                "</p>", nameNewUser, authCode, VERIFY_VALID_DURATION / 60))
+            .build();
+        try {
+            kafkaTemplate.send("notification--send-email", notificationEvent);
+        } catch (KafkaException kafkaException) {
+            kafkaException.printStackTrace();
+        }
 
         return jwtEncode(account);
     }
@@ -96,7 +120,7 @@ public class AccountService {
     }
 
     String jwtEncode(Account account) {
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(account.getId())
@@ -115,6 +139,7 @@ public class AccountService {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException joseException) {
+            log.error(joseException.getMessage());
             throw new RuntimeException("Cannot generate token!");
         }
     }

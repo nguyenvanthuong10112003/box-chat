@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.validator.constraints.Length;
 
 @Data
 @AllArgsConstructor
@@ -18,6 +19,6 @@ public class LoginRequest {
     @Email(message = "Email is invalid")
     String email;
     @NotBlank(message = "Password must be from 5 character")
-    @Min(value = 5, message = "Password must be from 5 character")
+    @Length(min = 5, message = "Password must be from 5 character")
     String password;
 }
