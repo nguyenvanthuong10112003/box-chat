@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập nhật thông tin cá nhân</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+   <a href="home.html">Trang chủ</a>
+   <div id="content">
+   </div> 
+   <script src="./config/Url.js"></script>
+   <script>
+        var content = document.getElementById('content')
+        var token;
+        onload = () => {
+            token = sessionStorage.getItem('token');
+            if (!token)
+                location.href = 'login.html';
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/users/me`,
+                    type:'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        content.innerHTML = `
+                            <h3>Cập nhật thông tin cá nhân</h3>
+                            <form>
+                                <label for="alias">Biệt danh</label> 
+                                <br>
+                                <input type="text" name="alias" value="${res.data.alias ? res.data.alias : ''}" />
+                                <br><br>
+                                <label for="full_name">Họ và tên</label> 
+                                <br>
+                                <input type="text" name="full_name" value="${res.data.full_name ? res.data.full_name : ''}" />
+                                <br><br>
+                                <label for="gender">Giới tính</label>
+                                <br>
+                                <input type="radio" value="true" name="gender" id="male" ${res.data.gender === true ? 'checked' : '' }/>
+                                <label for="male">Nam</label>
+                                <input type="radio" value="false" name="gender" id="female" ${res.data.gender === false ? 'checked' : '' } />
+                                <label for="female">Nữ</label>
+                                <br><br>
+                                <label for="dob">Ngày sinh</label> 
+                                <br>
+                                <input type="date" name="dob" value="${res.data.dob ? res.data.dob : '' }" />
+                                <br><br>
+                                <button type="button" onclick="save()">Lưu</button>
+                            </form>
+                        `;
+                    },
+                    error:function(res) {
+                        if (res.responseJSON.status_code === 1002) {
+                            $.ajax(
+                                {
+                                    url: `${baseUrlIdentity}/auth/resend?token=${token}`,
+                                    type:'POST',
+                                    dataType: 'json',
+                                    contentType: "application/json; charset=utf-8"
+                                }
+                            )
+                            location.href = 'verify.html'
+                        }
+                        else {
+                            sessionStorage.clear()
+                            location.href = 'login.html'
+                        }
+                    }
+                }
+            )
+        }
+        var forms = document.getElementsByTagName('form')
+        save = () => {
+            console.log(forms[0])
+            var formData = new FormData(forms[0]);
+            var request = Array.from(formData.entries()).reduce((result, item) => {
+                result[item[0]] = item[1]
+                return result
+            }, {})
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/users/update`,
+                    type:'PUT',
+                    data: JSON.stringify(request),
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        location.href = 'myprofile.html'
+                    },
+                    error:function(res) {
+                        alert(res.responseJSON.message)
+                    }
+                }
+            )
+        }
+   </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        #scroll {
+            max-height: 600px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <button type="button" onclick="logout()">Đăng xuất</button>
+    <div id="content">
+        <h3 id="welcome-txt"></h3>
+        <button type="button" onclick="location.href = 'myprofile.html'">My profile</button>
+        <h4>Danh sách<input type="text" id="key_search" placeholder="Nhập email tìm kiếm" style="float: right;"/></h4>
+        <div id="scroll">
+            <ul id="list">
+
+            </ul>
+        </div>
+    </div>
+    <script src="./config/Url.js"></script>
+    <script> 
+        var token;
+        logout = () => {
+            sessionStorage.clear();
+            location.href = 'login.html';
+        }
+        onload = () => {
+            token = sessionStorage.getItem('token');
+            if (!token)
+                location.href = 'login.html';
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/users/me`,
+                    type:'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        let name = res.data.alias ? res.data.alias : (res.data.full_name ? res.data.full_name : 'người dùng mới')
+                        $('#welcome-txt').text(`Xin chào, ${name}`)
+                        loadUsers()
+                    },
+                    error:function(res) {
+                        if (res.responseJSON.status_code === 1002) {
+                            $.ajax(
+                                {
+                                    url: `${baseUrlIdentity}/auth/resend?token=${token}`,
+                                    type:'POST',
+                                    dataType: 'json',
+                                    contentType: "application/json; charset=utf-8"
+                                }
+                            )
+                            location.href = 'verify.html'
+                        }
+                        else {
+                            sessionStorage.clear()
+                            location.href = 'login.html'
+                        }
+                    }
+                }
+            )
+            scroll.addEventListener('scroll', () => {
+                // Kiểm tra nếu cuộn đã đến cuối
+                if (scroll.scrollHeight - scroll.scrollTop === scroll.clientHeight) {
+                    maxPage++;
+                    if (maxPage < totalPage)
+                        loadUsers()
+                }
+            });
+            inputSearch.onkeyup = () => {
+                maxPage = 0
+                keySearch = inputSearch.value
+                list.innerHTML = ''
+                loadUsers()
+            }
+        }
+        var maxPage = 0;
+        const pageSize = 10;
+        var keySearch = "";
+        var list = document.getElementById('list')
+        var scroll = document.getElementById('scroll')
+        var totalPage;
+        var inputSearch = document.getElementById('key_search')
+        loadUsers = () => {
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/users`,
+                    data: {
+                        page_size: pageSize,
+                        page_number: maxPage,
+                        key_search: keySearch
+                    },
+                    type:'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success: (response) => {
+                        response = response.data
+                        totalPage = response.total_page
+                        response.data.forEach(item => {
+                            list.innerHTML = list.innerHTML += `
+                                <li style="list-style: none; display: flex; flex-direction: row; align-items:center; margin: 10px; cursor: pointer" onclick="toDetailsUser('${item.email}')">
+                                    <img style="width:64px" src="https://th.bing.com/th/id/R.8e2c571ff125b3531705198a15d3103c?rik=gzhbzBpXBa%2bxMA&riu=http%3a%2f%2fpluspng.com%2fimg-png%2fuser-png-icon-big-image-png-2240.png&ehk=VeWsrun%2fvDy5QDv2Z6Xm8XnIMXyeaz2fhR3AgxlvxAc%3d&risl=&pid=ImgRaw&r=0"/>
+                                    <div style="margin-left: 10px; display: flex; flex-direction: column">
+                                        <strong>${item.alias ? item.alias : (item.full_name ? item.full_name : 'Người dùng chưa cập nhật')}</strong>
+                                        <span>${item.gender == null ? 'Không xác định' : (item.gender ? 'Nam' : 'Nữ')}</span>
+                                    </div>
+                                </li>
+                            `
+                        })
+                    }, error: (response) => {
+                        console.log(response.responseJSON.message)
+                        alert(response.responseJSON.message)
+                    }
+                }
+            )
+        }
+        toDetailsUser = (email) => location.href = `profile.html?email=${email}` 
+    </script>
+</body>
+</html>

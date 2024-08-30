@@ -1,5 +1,6 @@
 package com.box_chat.notification_service.service;
 
+import com.box_chat.event.dto.NotificationEvent;
 import com.box_chat.notification_service.dto.request.EmailRequest;
 import com.box_chat.notification_service.dto.request.SendEmailRequest;
 import com.box_chat.notification_service.dto.request.UserRequest;
@@ -32,8 +33,8 @@ public class EmailService {
     @Value("${notification.email.brevo.sender-name}")
     String senderName;
 
-    public EmailResponse sendEmail(EmailRequest emailRequest) {
-        SendEmailRequest sendEmailRequest = emailMapper.toSendEmailRequest(emailRequest);
+    public EmailResponse sendEmail(NotificationEvent notificationEvent) {
+        SendEmailRequest sendEmailRequest = emailMapper.toSendEmailRequest(notificationEvent);
         sendEmailRequest.setSender(createSender());
 
         log.error("{}", sendEmailRequest);

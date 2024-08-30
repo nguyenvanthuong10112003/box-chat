@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+   <a href="home.html">Trang chủ</a>
+   <div id="content">
+   </div> 
+   <script src="./config/Url.js"></script>
+   <script>
+        var content = document.getElementById('content')
+        onload = () => {
+            let token = sessionStorage.getItem('token');
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            if (!token)
+                location.href = 'login.html';
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/users/find?email=${params.get('email')}`,
+                    type:'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        content.innerHTML = `
+                            <h3>Thông tin người dùng</h3>
+                            <ul>
+                                <li>Biệt danh: ${res.data.alias ? res.data.alias : 'Chưa cập nhật'}</li>
+                                <li>Họ và tên: ${res.data.full_name ? res.data.full_name : 'Chưa cập nhật'}</li>
+                                <li>Giới tính: ${res.data.gender == null ? 'Chưa cập nhật' : (res.data.gender === true ? 'Nam' : 'Nữ') }</li>
+                                <li>Ngày sinh: ${res.data.dob ? res.data.dob.split('-').reverse().join('-') : 'Chưa cập nhật' }</li>
+                                <li>Email: ${res.data.email} </li>
+                                <li>Thời gian tham gia: ${res.data.time_joined} </li>
+                            </ul>
+                        `;
+                    },
+                    error:function(res) {
+                        if (res.responseJSON.status_code === 1002) {
+                            $.ajax(
+                                {
+                                    url: `${baseUrlIdentity}/auth/resend?token=${token}`,
+                                    type:'POST',
+                                    dataType: 'json',
+                                    contentType: "application/json; charset=utf-8"
+                                }
+                            )
+                            location.href = 'verify.html'
+                        }
+                        else {
+                            sessionStorage.clear()
+                            location.href = 'login.html'
+                        }
+                    }
+                }
+            )
+        }
+   </script>
+</body>
+</html>

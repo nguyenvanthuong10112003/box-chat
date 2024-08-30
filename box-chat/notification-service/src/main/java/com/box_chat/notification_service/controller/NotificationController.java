@@ -17,10 +17,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotificationController {
     EmailService emailService;
-    EmailMapper emailMapper;
     @KafkaListener(topics = "notification--send-email")
     public void sendEmailNotificationListener(NotificationEvent notificationEvent) {
         log.error("{}", notificationEvent);
-        emailService.sendEmail(emailMapper.toEmailRequest(notificationEvent));
+        emailService.sendEmail(notificationEvent);
     }
 }

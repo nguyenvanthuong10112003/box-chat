@@ -1,9 +1,11 @@
 server:
   port: 8082
   servlet:
-    context-path: /identity-service
+    context-path: /identity
 
 spring:
+  main:
+    allow-circular-references: true
   datasource:
     url: jdbc:mysql://localhost:3306/box-chat
     username: root
@@ -18,6 +20,9 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  redis:
+    host: localhost
+    port: 6379
 
 jwt:
   signer-key: akksssskdhhfkshhdgdsjfggdffhdfhgfddsigner-key

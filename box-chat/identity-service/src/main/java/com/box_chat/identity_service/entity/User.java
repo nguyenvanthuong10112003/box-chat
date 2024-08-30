@@ -19,7 +19,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     String alias;
-    boolean gender;
+    Boolean gender;
     String fullName;
     LocalDate dob;
     @OneToOne(cascade = CascadeType.ALL)

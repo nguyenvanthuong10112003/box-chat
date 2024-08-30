@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <h3>Đăng nhập</h3>
+    <form>
+        <label for="email">Email</label>
+        <br>
+        <input type="email" name="email" id="email">
+        <br>
+        <label for="password">Password</label>
+        <br>
+        <input type="password" name="password" id="password">
+        <br>
+        <button type="button" onclick="login()">Đăng nhập</button>
+    </form>
+    <p>
+        Chưa có tài khoản? <a href="./register.html">Đăng ký</a>
+    </p>
+    <script src="./config/Url.js"></script>
+    <script>
+        var inputEmail = $("#email");
+        var inputPassword = $("#password");
+        onload = () => {
+            if (sessionStorage.getItem('token'))
+                location.href = 'home.html'
+        }
+        var login = () => {
+            let data = {
+                "email": inputEmail.val(),
+                "password": inputPassword.val()
+            };
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/auth/login`,
+                    type:'POST',
+                    data: JSON.stringify(data),
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        if (res.data.token) {
+                            sessionStorage.setItem('token', res.data.token) 
+                            location.href = 'home.html';
+                        }
+                    },
+                    error:function(res) {
+                        alert(res.responseJSON.message);
+                    }
+                }
+            )
+        }
+        onload()
+    </script>
+</body>
+</html>

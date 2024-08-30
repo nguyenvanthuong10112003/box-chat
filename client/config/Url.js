@@ -1,0 +1,1 @@
+const baseUrlIdentity = "http://localhost:8888/api/v1/identity";

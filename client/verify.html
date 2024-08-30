@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực tài khoản</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <button type="button" onclick="logout()">Đăng xuất</button>
+    <h3>Xác thực tài khoản</h3>
+    <p>Hệ thống đã gửi mã xác minh về email mà bạn đăng ký. Vui lòng kiểm tra và xác thực tài khoản.</p>
+    <form>
+        <label for="code">Mã xác thực:</label>
+        <input type="text" maxlength="6" name="code" id="code" placeholder="Nhập mã xác thực">
+        <button type="button" onclick="resend()">Gửi lại</button>
+        <br><br>
+        <button type="button" onclick="verify()">Xác thực</button>
+    </form>
+    <script src="./config/Url.js"></script>
+    <script> 
+        var token;
+        var inputCode = document.getElementById('code')
+        logout = () => {
+            sessionStorage.clear();
+            location.href = 'login.html';
+        }
+        onload = () => {
+            token = sessionStorage.getItem('token')
+            if (!token)
+                location.href = 'login.html';
+        }
+        resend = () => {
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/auth/resend?token=${token}`,
+                    type:'POST',
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        alert('Đã gửi lại!')
+                    },
+                    error:function(res) {
+                        alert(res.responseJSON.message);
+                    }
+                }
+            )
+        }
+        verify = () => {
+            $.ajax(
+                {
+                    url: `${baseUrlIdentity}/auth/verify`,
+                    type:'POST',
+                    data: JSON.stringify({
+                        token: token,
+                        auth_code: inputCode.value
+                    }),
+                    dataType: 'json',
+                    contentType: "application/json; charset=utf-8",
+                    success:function(res) {
+                        location.href = 'home.html'
+                    },
+                    error:function(res) {
+                        alert(res.responseJSON.message);
+                    }
+                }
+            )
+        } 
+    </script>
+</body>
+</html>

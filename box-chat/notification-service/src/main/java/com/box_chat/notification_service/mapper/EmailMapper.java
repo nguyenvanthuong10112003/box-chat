@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface EmailMapper {
-    @Mapping(target = "to", expression = "java(java.util.Collections.singletonList(emailRequest.getReceiver()))")
-    SendEmailRequest toSendEmailRequest(EmailRequest emailRequest);
-
-    @Mapping(target = "receiver", expression =
-        "java(new com.box_chat.notification_service.dto.request.UserRequest(notificationEvent.getReceiverName(), notificationEvent.getReceiverEmail()))")
-    EmailRequest toEmailRequest(NotificationEvent notificationEvent);
+    @Mapping(target = "to", expression = "java(java.util.Collections.singletonList(" +
+        "new com.box_chat.notification_service.dto.request.UserRequest(" +
+            "notificationEvent.getReceiverName(), " +
+            "notificationEvent.getReceiverEmail()))" +
+        ")")
+    SendEmailRequest toSendEmailRequest(NotificationEvent notificationEvent);
 }

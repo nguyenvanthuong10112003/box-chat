@@ -1,9 +1,7 @@
 package com.box_chat.identity_service.dto.request;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,7 +17,7 @@ import org.hibernate.validator.constraints.Length;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class AccountVerifyRequest {
     @NotBlank
-    String accountId;
+    String token;
     @NotBlank
     @Length(min = 6, max = 6, message = "Authentication code must be 6 character digit")
     String authCode;
