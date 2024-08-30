@@ -7,7 +7,7 @@ notification:
   email:
     brevo:
       url: 'https://api.brevo.com'
-      api-key: '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'
+      api-key: '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'
       sender-email: 'nguyenvanthuong10112003@gmail.com'
       sender-name: 'BoxChat'
 

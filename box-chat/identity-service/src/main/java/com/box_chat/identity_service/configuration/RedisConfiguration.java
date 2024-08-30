@@ -44,6 +44,7 @@ public class RedisConfiguration {
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
         redisTemplate.afterPropertiesSet();
+        redisTemplate.keys("*").stream().forEach(redisTemplate::delete);
         return redisTemplate;
     }
 

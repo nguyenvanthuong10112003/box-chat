@@ -28,6 +28,7 @@
     <script src="./config/Url.js"></script>
     <script> 
         var token;
+        var currentUser;
         logout = () => {
             sessionStorage.clear();
             location.href = 'login.html';
@@ -46,6 +47,7 @@
                     dataType: 'json',
                     contentType: "application/json; charset=utf-8",
                     success:function(res) {
+                        currentUser = res.data;
                         let name = res.data.alias ? res.data.alias : (res.data.full_name ? res.data.full_name : 'người dùng mới')
                         $('#welcome-txt').text(`Xin chào, ${name}`)
                         loadUsers()
@@ -110,6 +112,8 @@
                         response = response.data
                         totalPage = response.total_page
                         response.data.forEach(item => {
+                            if (item.id === currentUser.id) 
+                                return;
                             list.innerHTML = list.innerHTML += `
                                 <li style="list-style: none; display: flex; flex-direction: row; align-items:center; margin: 10px; cursor: pointer" onclick="toDetailsUser('${item.email}')">
                                     <img style="width:64px" src="https://th.bing.com/th/id/R.8e2c571ff125b3531705198a15d3103c?rik=gzhbzBpXBa%2bxMA&riu=http%3a%2f%2fpluspng.com%2fimg-png%2fuser-png-icon-big-image-png-2240.png&ehk=VeWsrun%2fvDy5QDv2Z6Xm8XnIMXyeaz2fhR3AgxlvxAc%3d&risl=&pid=ImgRaw&r=0"/>
